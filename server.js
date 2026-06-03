@@ -6,11 +6,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const OLLAMA_URL = process.env.OLLAMA_URL;
+
 app.post("/chat", async (req, res) => {
   try {
-    console.log("Request body:", req.body);
+    if (!OLLAMA_URL) {
+      return res.status(500).json({
+        error: "OLLAMA_URL not set in environment variables",
+      });
+    }
 
-    const response = await fetch("http://127.0.0.1:11434/api/chat", {
+    const response = await fetch(`${OLLAMA_URL}/api/chat`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -26,7 +32,6 @@ app.post("/chat", async (req, res) => {
     res.json(data);
   } catch (error) {
     console.error("Fetch error:", error);
-    console.error("Cause:", error.cause);
 
     res.status(500).json({
       error: error.message,
@@ -35,6 +40,8 @@ app.post("/chat", async (req, res) => {
   }
 });
 
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
