@@ -1,47 +1,35 @@
 import express from "express";
 import cors from "cors";
+import Groq from "groq-sdk";
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-const OLLAMA_URL = process.env.OLLAMA_URL;
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY, // Better to use env variable
+});
 
 app.post("/chat", async (req, res) => {
   try {
-    if (!OLLAMA_URL) {
-      return res.status(500).json({
-        error: "OLLAMA_URL not set in environment variables",
-      });
-    }
+    console.log("Request body:", req.body);
 
-    const response = await fetch(`${OLLAMA_URL}/api/chat`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "llama3.2:1b",
-        messages: req.body.messages,
-        stream: false,
-      }),
+    const chatCompletion = await groq.chat.completions.create({
+      messages: req.body.messages,
+      model: "openai/gpt-oss-20b",
     });
 
-    const data = await response.json();
-    res.json(data);
+    res.json(chatCompletion);
   } catch (error) {
-    console.error("Fetch error:", error);
+    console.error("Groq error:", error);
 
     res.status(500).json({
       error: error.message,
-      cause: error.cause?.message,
     });
   }
 });
 
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(5000, () => {
+  console.log("Server running on port 5000");
 });
