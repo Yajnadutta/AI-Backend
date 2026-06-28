@@ -2,7 +2,10 @@ import express from "express";
 import cors from "cors";
 import multer from "multer";
 import fs from "fs";
-import pdf from "pdf-parse";
+import { createRequire } from "module";
+
+const require = createRequire(import.meta.url);
+const pdf = require("pdf-parse");
 import mammoth from "mammoth";
 import csvParser from "csv-parser";
 import Groq from "groq-sdk";
